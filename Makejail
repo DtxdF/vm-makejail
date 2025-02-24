@@ -25,7 +25,7 @@ VAR --make-arg-env JAIL_NAME=${APPJAIL_JAILNAME}
 CMD mkdir -p /usr/local/etc/pkg/repos
 COPY PKG.conf /usr/local/etc/pkg/repos/PKG.conf
 
-PKG vm-bhyve-devel tmux
+PKG vm-bhyve-devel bhyve-firmware tmux
 
 SYSRC vm_enable=YES
 SYSRC vm_dir=/vm
