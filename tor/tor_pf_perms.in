@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# PROVIDE: tor_pf_perms
+# REQUIRE: pf
+
+#
+# rc(8) script based on the following:
+#
+# - https://github.com/BawdyAnarchist/quBSD/blob/main/zusr/net-tor/rw/usr/local/etc/rc.d/tor_pf_perms
+#
+
+. /etc/rc.subr
+
+name="tor_pf_perms"
+desc="Modify /dev/pf permissions so that Tor TransPort starts correctly"
+rcvar="${name}_enable"
+
+load_rc_config ${name}
+
+: ${tor_pf_perms_enable:=NO}
+
+start_cmd="${name}_start"
+
+tor_pf_perms_start() {
+    chgrp _tor /dev/pf
+    chmod g+rw /dev/pf
+}
+
+load_rc_config $name
+run_rc_command "$1"

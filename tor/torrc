@@ -1,0 +1,14 @@
+Log info file /var/log/tor/info.log
+Log notice file /var/log/tor/notice.log
+Log warn file /var/log/tor/warn.log
+Log err file /var/log/tor/err.log
+
+SocksPort 0.0.0.0:9050
+
+DNSPort 5353
+
+TransPort 9040
+
+AutomapHostsOnResolve 1
+
+VirtualAddrNetworkIPv4 172.16.0.0/12

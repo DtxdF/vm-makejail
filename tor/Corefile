@@ -1,0 +1,7 @@
+.:53 {
+    bind 0.0.0.0
+    log
+    errors
+    forward . 127.0.0.1:5353
+    cache 30
+}
