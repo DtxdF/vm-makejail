@@ -19,6 +19,7 @@ OPTION device=path kmem unhide
 OPTION device=path pci unhide
 OPTION device=path io unhide
 OPTION template=template.conf
+OPTION volume=vm-data mountpoint:/vm
 
 VAR --make-arg-env JAIL_NAME=${APPJAIL_JAILNAME}
 
@@ -30,12 +31,13 @@ PKG vm-bhyve-devel bhyve-firmware tmux
 SYSRC vm_enable=YES
 SYSRC vm_dir=/vm
 
-CMD mkdir -p /vm
-
-CMD vm init
-CMD cp /usr/local/share/examples/vm-bhyve/*.conf /vm/.templates
-
-CMD sysrc -f /vm/.config/system.conf console=tmux
+RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
+        CMD find /vm -depth 1 -not -name '.img' -and -not -name '.iso' -exec rm -rf {} + && \
+            mkdir -p /vm && \
+            vm init && \
+            cp /usr/local/share/examples/vm-bhyve/*.conf /vm/.templates && \
+            sysrc -f /vm/.config/system.conf console=tmux
+RAW fi
 
 CMD echo "nat on eb_${JAIL_NAME} from {192.168.8.0/24} to any -> (eb_${JAIL_NAME})" > /etc/pf.conf
 CMD echo net.inet.ip.forwarding=1 >> /etc/sysctl.conf
@@ -48,8 +50,14 @@ SYSRC "cloned_interfaces+=bridge0"
 SYSRC ifconfig_bridge0_name=vmbridge
 SYSRC "ifconfig_vmbridge=inet 192.168.8.1/24"
 
-CMD service netif cloneup bridge0 \
-    && service netif start bridge0 \
-    && service netif start vmbridge
+CMD service netif cloneup bridge0 && \
+    service netif start bridge0 && \
+    service netif start vmbridge
 
-CMD vm switch create -t manual -b vmbridge public
+RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
+        CMD vm switch create -t manual -b vmbridge public
+RAW fi
+
+STAGE stop
+
+CMD rm -f /vm/*/run.lock
