@@ -72,3 +72,7 @@ CMD mkdir -p /usr/local/etc/coredns
 COPY tor/Corefile /usr/local/etc/coredns/Corefile
 SYSRC coredns_enable=YES
 SERVICE coredns start
+
+STAGE stop
+
+CMD rm -f /vm/*/run.lock
