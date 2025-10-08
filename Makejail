@@ -1,3 +1,5 @@
+ARG is_public_vm=0
+
 OPTION start
 OPTION overwrite=force
 OPTION virtualnet=:<name> default
@@ -40,6 +42,9 @@ RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
 RAW fi
 
 CMD echo "nat on eb_${JAIL_NAME} from {192.168.8.0/24} to any -> (eb_${JAIL_NAME})" > /etc/pf.conf
+RAW if [ "${is_public_vm}" != 0 ]; then
+        CMD echo "rdr pass on eb_${JAIL_NAME} inet proto { tcp, udp } from any to (eb_${JAIL_NAME}:0) port 1:65535 -> 192.168.8.2 port 1:65535" >> /etc/pf.conf
+RAW fi
 CMD echo net.inet.ip.forwarding=1 >> /etc/sysctl.conf
 
 CMD sysctl net.inet.ip.forwarding=1
