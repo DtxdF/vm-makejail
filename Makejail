@@ -1,4 +1,5 @@
 ARG is_public_vm=0
+ARG exclude_ports?
 
 OPTION start
 OPTION overwrite=force
@@ -42,6 +43,9 @@ RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
 RAW fi
 
 CMD echo "nat on eb_${JAIL_NAME} from {192.168.8.0/24} to any -> (eb_${JAIL_NAME})" > /etc/pf.conf
+RAW if [ -n "${exclude_ports}" ]; then
+        CMD echo "no rdr on eb_${JAIL_NAME} inet proto { tcp, udp } from any to (eb_${JAIL_NAME}:0) port ${exclude_ports}" >> /etc/pf.conf
+RAW fi
 RAW if [ "${is_public_vm}" != 0 ]; then
         CMD echo "rdr pass on eb_${JAIL_NAME} inet proto { tcp, udp } from any to (eb_${JAIL_NAME}:0) port 1:65535 -> 192.168.8.2 port 1:65535" >> /etc/pf.conf
 RAW fi
