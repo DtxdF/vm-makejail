@@ -32,8 +32,8 @@ SYSRC vm_enable=YES
 SYSRC vm_dir=/vm
 
 RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
-        CMD find /vm -depth 1 -not -name '.img' -and -not -name '.iso' -exec rm -rf {} + && \
-            mkdir -p /vm && \
+        CMD mkdir -p /vm && \
+            find /vm -depth 1 -not -name '.img' -and -not -name '.iso' -exec rm -rf {} + && \
             vm init && \
             cp /usr/local/share/examples/vm-bhyve/*.conf /vm/.templates && \
             sysrc -f /vm/.config/system.conf console=tmux
