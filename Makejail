@@ -26,6 +26,12 @@ OPTION volume=vm-data mountpoint:/vm
 
 VAR --make-arg-env JAIL_NAME=${APPJAIL_JAILNAME}
 
+# If the virtual machine refuses to shut down when the jail is stopped, it remains,
+# so vm-bhyve cannot start that virtual machine on the next run.
+RAW if [ -c "/dev/vmm/${APPJAIL_JAILNAME}" ]; then
+        CMD --local bhyvectl "--vm=${APPJAIL_JAILNAME}" --destroy
+RAW fi
+
 CMD mkdir -p /usr/local/etc/pkg/repos
 COPY PKG.conf /usr/local/etc/pkg/repos/PKG.conf
 
