@@ -79,6 +79,17 @@ COPY tor/Corefile /usr/local/etc/coredns/Corefile
 SYSRC coredns_enable=YES
 SERVICE coredns start
 
+STAGE create
+
+# This stage is not executed when the jail is created, unless we use the `STOP`
+# instruction at the end of the `build` stage, but this is not necessary, as
+# we already perform the following test at the beginning of the `build` stage.
+# The following test is more useful before the jail and, therefore, the VM is
+# started.
+RAW if [ -c "/dev/vmm/${APPJAIL_JAILNAME}" ]; then
+        CMD --local bhyvectl "--vm=${APPJAIL_JAILNAME}" --destroy
+RAW fi
+
 STAGE stop
 
 CMD rm -f /vm/*/run.lock
