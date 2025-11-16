@@ -2,7 +2,6 @@ OPTION start
 OPTION overwrite=force
 OPTION virtualnet=:<name> default
 OPTION nat
-OPTION resolv_conf=resolv.conf
 OPTION mount_devfs
 OPTION device=include \$devfsrules_hide_all
 OPTION device=include \$devfsrules_unhide_basic
