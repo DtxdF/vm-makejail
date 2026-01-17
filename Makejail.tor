@@ -11,6 +11,7 @@ OPTION device=path vmm unhide
 OPTION device=path 'vmm/*' unhide
 OPTION device=path vmm.io unhide
 OPTION device=path 'vmm.io/*' unhide
+OPTION device=path vmmctl unhide
 OPTION device=path 'nmdm*' unhide
 OPTION device=path 'tap*' unhide
 OPTION device=path mem unhide
