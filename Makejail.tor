@@ -1,3 +1,5 @@
+ARG with_qemu_tools=0
+
 OPTION start
 OPTION overwrite=force
 OPTION virtualnet=:<name> default
@@ -20,6 +22,7 @@ OPTION device=path pci unhide
 OPTION device=path io unhide
 OPTION template=template.conf
 OPTION volume=vm-data mountpoint:/vm
+OPTION type=thick
 
 VAR --make-arg-env JAIL_NAME=${APPJAIL_JAILNAME}
 
@@ -30,9 +33,18 @@ RAW if [ -c "/dev/vmm/${APPJAIL_JAILNAME}" ]; then
 RAW fi
 
 CMD mkdir -p /usr/local/etc/pkg/repos
-COPY PKG.conf /usr/local/etc/pkg/repos/PKG.conf
+RAW if appjail cmd jexec "${APPJAIL_JAILNAME}" [ "`freebsd-version -u | grep -oEe '^[^.]+'`" -ge 15 ]; then
+        COPY pkg/post-pkgbase.conf /usr/local/etc/pkg/repos/PKG.conf
+        PKG FreeBSD-acpi
+RAW else
+        COPY pkg/pre-pkgbase.conf /usr/local/etc/pkg/repos/PKG.conf
+RAW fi
 
 PKG vm-bhyve-devel bhyve-firmware tmux coredns tor
+
+RAW if [ "${with_qemu_tools}" != 0 ]; then
+        PKG qemu-tools
+RAW fi
 
 SYSRC vm_enable=YES
 SYSRC vm_dir=/vm
@@ -78,6 +90,9 @@ CMD mkdir -p /usr/local/etc/coredns
 COPY tor/Corefile /usr/local/etc/coredns/Corefile
 SYSRC coredns_enable=YES
 SERVICE coredns start
+
+SYSRC syslogd_flags=-ss
+SERVICE syslogd restart
 
 STAGE create
 

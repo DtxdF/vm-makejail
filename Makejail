@@ -1,5 +1,7 @@
 ARG is_public_vm=0
 ARG exclude_ports?
+ARG with_qemu_tools=0
+ARG pf_stricter=1
 
 OPTION start
 OPTION overwrite=force
@@ -23,6 +25,7 @@ OPTION device=path pci unhide
 OPTION device=path io unhide
 OPTION template=template.conf
 OPTION volume=vm-data mountpoint:/vm
+OPTION type=thick
 
 VAR --make-arg-env JAIL_NAME=${APPJAIL_JAILNAME}
 
@@ -33,9 +36,18 @@ RAW if [ -c "/dev/vmm/${APPJAIL_JAILNAME}" ]; then
 RAW fi
 
 CMD mkdir -p /usr/local/etc/pkg/repos
-COPY PKG.conf /usr/local/etc/pkg/repos/PKG.conf
+RAW if appjail cmd jexec "${APPJAIL_JAILNAME}" [ "`freebsd-version -u | grep -oEe '^[^.]+'`" -ge 15 ]; then
+        COPY pkg/post-pkgbase.conf /usr/local/etc/pkg/repos/PKG.conf
+        PKG FreeBSD-acpi
+RAW else
+        COPY pkg/pre-pkgbase.conf /usr/local/etc/pkg/repos/PKG.conf
+RAW fi
 
 PKG vm-bhyve-devel bhyve-firmware tmux
+
+RAW if [ "${with_qemu_tools}" != 0 ]; then
+        PKG qemu-tools
+RAW fi
 
 SYSRC vm_enable=YES
 SYSRC vm_dir=/vm
@@ -55,6 +67,10 @@ RAW fi
 RAW if [ "${is_public_vm}" != 0 ]; then
         CMD echo "rdr pass on eb_${JAIL_NAME} inet proto { tcp, udp } from any to (eb_${JAIL_NAME}:0) port 1:65535 -> 192.168.8.2 port 1:65535" >> /etc/pf.conf
 RAW fi
+RAW if [ "${pf_stricter}" != 0 ]; then
+        CMD echo "block in on vmbridge from ! 192.168.8.0/24" >> /etc/pf.conf
+        CMD echo "block in on vmbridge from 192.168.8.0/24 to (vmbridge:0)" >> /etc/pf.conf
+RAW fi
 CMD echo net.inet.ip.forwarding=1 >> /etc/sysctl.conf
 
 CMD sysctl net.inet.ip.forwarding=1
@@ -72,6 +88,9 @@ CMD service netif cloneup bridge0 && \
 RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
         CMD vm switch create -t manual -b vmbridge public
 RAW fi
+
+SYSRC syslogd_flags=-ss
+SERVICE syslogd restart
 
 STAGE create
 
