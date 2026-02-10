@@ -5,7 +5,7 @@ ARG pf_stricter=1
 
 OPTION start
 OPTION overwrite=force
-OPTION virtualnet=:<name> default
+OPTION virtualnet=:<random> default
 OPTION nat
 OPTION mount_devfs
 OPTION device=include \$devfsrules_hide_all
@@ -27,6 +27,14 @@ OPTION template=template.conf
 OPTION volume=vm-data mountpoint:/vm
 OPTION type=thick
 
+RAW default_interface=`appjail cmd jexec "${APPJAIL_JAILNAME}" route -n4 get default 2> /dev/null | grep 'interface:' | cut -d' ' -f4-`
+
+RAW if [ -z "${default_interface}" ]; then
+        RAW echo "No default interface found. Cannot continue ..."
+        RAW exit 1
+RAW fi
+
+VAR --make-arg-env DEFAULT_INTERFACE=${default_interface}
 VAR --make-arg-env JAIL_NAME=${APPJAIL_JAILNAME}
 
 # If the virtual machine refuses to shut down when the jail is stopped, it remains,
@@ -60,12 +68,12 @@ RAW if appjail cmd local "${APPJAIL_JAILNAME}" [ ! -f vm/.done ]; then
             sysrc -f /vm/.config/system.conf console=tmux
 RAW fi
 
-CMD echo "nat on eb_${JAIL_NAME} from {192.168.8.0/24} to any -> (eb_${JAIL_NAME})" > /etc/pf.conf
+CMD echo "nat on ${DEFAULT_INTERFACE} from {192.168.8.0/24} to any -> (${DEFAULT_INTERFACE})" > /etc/pf.conf
 RAW if [ -n "${exclude_ports}" ]; then
-        CMD echo "no rdr on eb_${JAIL_NAME} inet proto { tcp, udp } from any to (eb_${JAIL_NAME}:0) port ${exclude_ports}" >> /etc/pf.conf
+        CMD echo "no rdr on ${DEFAULT_INTERFACE} inet proto { tcp, udp } from any to (${DEFAULT_INTERFACE}:0) port ${exclude_ports}" >> /etc/pf.conf
 RAW fi
 RAW if [ "${is_public_vm}" != 0 ]; then
-        CMD echo "rdr pass on eb_${JAIL_NAME} inet proto { tcp, udp } from any to (eb_${JAIL_NAME}:0) port 1:65535 -> 192.168.8.2 port 1:65535" >> /etc/pf.conf
+        CMD echo "rdr pass on ${DEFAULT_INTERFACE} inet proto { tcp, udp } from any to (${DEFAULT_INTERFACE}:0) port 1:65535 -> 192.168.8.2 port 1:65535" >> /etc/pf.conf
 RAW fi
 RAW if [ "${pf_stricter}" != 0 ]; then
         CMD echo "block in on vmbridge from ! 192.168.8.0/24" >> /etc/pf.conf
