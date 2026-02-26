@@ -1,6 +1,7 @@
 ARG is_public_vm=0
 ARG exclude_ports?
 ARG with_qemu_tools=0
+ARG with_grub2_bhyve=0
 ARG pf_stricter=1
 
 OPTION start
@@ -55,6 +56,10 @@ PKG vm-bhyve-devel bhyve-firmware tmux
 
 RAW if [ "${with_qemu_tools}" != 0 ]; then
         PKG qemu-tools
+RAW fi
+
+RAW if [ "${with_grub2_bhyve}" != 0 ]; then
+        PKG grub2-bhyve
 RAW fi
 
 SYSRC vm_enable=YES
