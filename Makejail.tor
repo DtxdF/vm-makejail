@@ -105,6 +105,12 @@ RAW if [ -c "/dev/vmm/${APPJAIL_JAILNAME}" ]; then
         CMD --local bhyvectl "--vm=${APPJAIL_JAILNAME}" --destroy
 RAW fi
 
+# In the event of a power outage, the VM will not start unless the user
+# explicitly starts it. With tools like Overlord, this isn't ideal,
+# since the idea is that the user shouldn't have to do these things
+# manually.
+CMD --local rm -f vm/*/run.lock
+
 STAGE stop
 
 CMD rm -f /vm/*/run.lock
