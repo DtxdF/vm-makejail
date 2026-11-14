@@ -110,6 +110,7 @@ RAW fi
 # since the idea is that the user shouldn't have to do these things
 # manually.
 CMD --local rm -f vm/*/run.lock
+CMD --local rm -f vm/*/vtcon.*
 
 STAGE stop
 
