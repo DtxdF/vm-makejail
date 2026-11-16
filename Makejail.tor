@@ -109,8 +109,8 @@ RAW fi
 # explicitly starts it. With tools like Overlord, this isn't ideal,
 # since the idea is that the user shouldn't have to do these things
 # manually.
-CMD --local rm -f vm/*/run.lock
-CMD --local rm -f vm/*/vtcon.*
+CMD --local sh -c "rm -f vm/*/run.lock"
+CMD --local sh -c "rm -f vm/*/vtcon.*"
 
 STAGE stop
 
