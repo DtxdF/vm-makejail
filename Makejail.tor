@@ -1,4 +1,5 @@
 ARG with_qemu_tools=0
+ARG with_grub2_bhyve=0
 
 OPTION start
 OPTION overwrite=force
@@ -44,6 +45,10 @@ PKG vm-bhyve-devel bhyve-firmware tmux coredns tor
 
 RAW if [ "${with_qemu_tools}" != 0 ]; then
         PKG qemu-tools
+RAW fi
+
+RAW if [ "${with_grub2_bhyve}" != 0 ]; then
+        PKG grub2-bhyve
 RAW fi
 
 SYSRC vm_enable=YES
